@@ -4,9 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge as UIBadge } from "@/components/ui/badge"
-import { Sparkles, CheckCircle2, Award, Star, Rocket, Zap } from "lucide-react"
+import { Sparkles, CheckCircle2, Award, Star, Rocket, Zap, Volume2, VolumeX } from "lucide-react"
 import MissionCard from "./mission-card"
-import ReflectionModal from "./reflection-modal"
 import BadgeCollection from "./badge-collection"
 
 type Badge = {
@@ -129,9 +128,9 @@ const missions: Mission[] = [
 export default function AIExplorerGame() {
   const [currentMissions, setCurrentMissions] = useState<Mission[]>(missions)
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null)
-  const [showReflection, setShowReflection] = useState(false)
   const [earnedBadges, setEarnedBadges] = useState<Badge[]>([])
   const [gameStarted, setGameStarted] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(true)
 
   const completedCount = currentMissions.filter((m) => m.completed).length
   const progress = (completedCount / currentMissions.length) * 100
@@ -143,10 +142,54 @@ export default function AIExplorerGame() {
     const completedMission = updatedMissions.find((m) => m.id === missionId)
     if (completedMission?.badge && !earnedBadges.find((b) => b.id === completedMission.badge!.id)) {
       setEarnedBadges([...earnedBadges, completedMission.badge])
+      playAudio("success")
     }
 
     setSelectedMission(null)
-    setShowReflection(true)
+  }
+
+  const playAudio = (type: "success" | "click" | "correct" | "complete") => {
+    if (!soundEnabled) return
+
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+
+    if (type === "success") {
+      const notes = [523.25, 659.25, 783.99, 1046.5]
+      notes.forEach((freq, i) => {
+        const osc = audioContext.createOscillator()
+        const gain = audioContext.createGain()
+        osc.connect(gain)
+        gain.connect(audioContext.destination)
+        osc.frequency.value = freq
+        osc.type = "sine"
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime)
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
+        osc.start(audioContext.currentTime + i * 0.15)
+        osc.stop(audioContext.currentTime + i * 0.15 + 0.2)
+      })
+    } else if (type === "correct") {
+      const osc = audioContext.createOscillator()
+      const gain = audioContext.createGain()
+      osc.connect(gain)
+      gain.connect(audioContext.destination)
+      osc.frequency.value = 880
+      osc.type = "sine"
+      gain.gain.setValueAtTime(0.1, audioContext.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1)
+      osc.start(audioContext.currentTime)
+      osc.stop(audioContext.currentTime + 0.1)
+    } else if (type === "click") {
+      const osc = audioContext.createOscillator()
+      const gain = audioContext.createGain()
+      osc.connect(gain)
+      gain.connect(audioContext.destination)
+      osc.frequency.value = 600
+      osc.type = "sine"
+      gain.gain.setValueAtTime(0.05, audioContext.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05)
+      osc.start(audioContext.currentTime)
+      osc.stop(audioContext.currentTime + 0.05)
+    }
   }
 
   if (!gameStarted) {
@@ -173,7 +216,7 @@ export default function AIExplorerGame() {
               <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-teal-400/20 to-teal-500/10 rounded-xl border-2 border-teal-400/30 hover:scale-105 transition-transform shadow-lg">
                 <div className="text-3xl">🎯</div>
                 <div>
-                  <h3 className="font-semibold mb-1 text-lg">🌟 Present</h3>
+                  <h3 className="font-semibold mb-1 text-lg">🌟 Learn</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Explore 6 AMAZING real-world AI adventures in healthcare, gaming, weather, and MORE! Each one is
                     cooler than the last! 🤯
@@ -181,36 +224,46 @@ export default function AIExplorerGame() {
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-400/20 to-blue-500/10 rounded-xl border-2 border-blue-400/30 hover:scale-105 transition-transform shadow-lg">
-                <div className="text-3xl">🧠</div>
+                <div className="text-3xl">🧩</div>
                 <div>
-                  <h3 className="font-semibold mb-1 text-lg">💡 Reflect</h3>
+                  <h3 className="font-semibold mb-1 text-lg">🎮 Challenge</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Test your brain power! 💪 Answer fun questions and see how much you've learned! No boring stuff - we
-                    promise! 😄
+                    Answer 6 super fun questions per mission and test your brain power! 💪 Different questions every
+                    time you play! 🎲
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-purple-400/20 to-purple-500/10 rounded-xl border-2 border-purple-400/30 hover:scale-105 transition-transform shadow-lg">
-                <div className="text-3xl">🔗</div>
+                <div className="text-3xl">🏆</div>
                 <div>
-                  <h3 className="font-semibold mb-1 text-lg">✨ Connect</h3>
+                  <h3 className="font-semibold mb-1 text-lg">✨ Achieve</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    See how AI affects YOUR life today and discover awesome future careers! Maybe you'll build the next
-                    AI that changes the world! 🌍
+                    Earn awesome badges, unlock achievements, and watch your progress! Plus EPIC sounds make everything
+                    more fun! 🎵
                   </p>
                 </div>
               </div>
             </div>
 
-            <Button
-              onClick={() => setGameStarted(true)}
-              size="lg"
-              className="w-full text-lg h-16 font-bold bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white hover:scale-105 transition-all shadow-lg"
-            >
-              <Rocket className="w-6 h-6 mr-2" />
-              Start Your EPIC AI Adventure! 🚀
-              <Sparkles className="w-6 h-6 ml-2" />
-            </Button>
+            <div className="flex gap-2 justify-center">
+              <Button
+                onClick={() => setGameStarted(true)}
+                size="lg"
+                className="text-lg h-16 font-bold bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white hover:scale-105 transition-all shadow-lg"
+              >
+                <Rocket className="w-6 h-6 mr-2" />
+                Start Your EPIC AI Adventure! 🚀
+                <Sparkles className="w-6 h-6 ml-2" />
+              </Button>
+              <Button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                size="lg"
+                variant="outline"
+                className="text-lg h-16 border-2 hover:scale-105 transition-all"
+              >
+                {soundEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -250,6 +303,9 @@ export default function AIExplorerGame() {
                 <Award className="w-4 h-4 mr-2" />
                 {earnedBadges.length} Badges 🏆
               </UIBadge>
+              <Button onClick={() => setSoundEnabled(!soundEnabled)} variant="outline" size="sm" className="border-2">
+                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </Button>
             </div>
           </div>
 
@@ -276,6 +332,8 @@ export default function AIExplorerGame() {
             mission={selectedMission}
             onComplete={handleMissionComplete}
             onBack={() => setSelectedMission(null)}
+            soundEnabled={soundEnabled}
+            playAudio={playAudio}
           />
         ) : (
           <div className="space-y-8">
@@ -299,12 +357,12 @@ export default function AIExplorerGame() {
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {currentMissions.map((mission, idx) => {
                   const gradients = [
-                    "from-teal-400/20 to-teal-500/10 border-teal-300", // Healthcare - teal
-                    "from-blue-400/20 to-blue-500/10 border-blue-300", // Social Media - blue
-                    "from-yellow-400/20 to-yellow-500/10 border-yellow-300", // Weather - yellow
-                    "from-purple-400/20 to-purple-500/10 border-purple-300", // Accessibility - purple
-                    "from-cyan-400/20 to-cyan-500/10 border-cyan-300", // Fraud - cyan
-                    "from-pink-400/20 to-pink-500/10 border-pink-300", // Education - coral/pink
+                    "from-teal-400/20 to-teal-500/10 border-teal-300",
+                    "from-blue-400/20 to-blue-500/10 border-blue-300",
+                    "from-yellow-400/20 to-yellow-500/10 border-yellow-300",
+                    "from-purple-400/20 to-purple-500/10 border-purple-300",
+                    "from-cyan-400/20 to-cyan-500/10 border-cyan-300",
+                    "from-pink-400/20 to-pink-500/10 border-pink-300",
                   ]
 
                   return (
@@ -314,7 +372,10 @@ export default function AIExplorerGame() {
                         mission.completed ? "border-3 shadow-xl" : "border-2"
                       }`}
                       style={{ animationDelay: `${idx * 100}ms` }}
-                      onClick={() => setSelectedMission(mission)}
+                      onClick={() => {
+                        setSelectedMission(mission)
+                        playAudio("click")
+                      }}
                     >
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
@@ -365,9 +426,6 @@ export default function AIExplorerGame() {
           </div>
         )}
       </main>
-
-      {/* Reflection Modal */}
-      {showReflection && <ReflectionModal onClose={() => setShowReflection(false)} />}
     </div>
   )
 }

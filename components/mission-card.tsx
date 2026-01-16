@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { ChevronLeft, Sparkles, Brain, CheckCircle2, Rocket, Star, Trophy, Zap } from "lucide-react"
 
 type Mission = {
@@ -23,6 +22,8 @@ type Props = {
   mission: Mission
   onComplete: (missionId: number) => void
   onBack: () => void
+  soundEnabled: boolean
+  playAudio: (type: "success" | "click" | "correct" | "complete") => void
 }
 
 const allQuizQuestions: Record<
@@ -36,7 +37,6 @@ const allQuizQuestions: Record<
   }>
 > = {
   1: [
-    // Healthcare
     {
       id: "h1",
       question: "Why is AI super helpful for doctors looking at X-rays? 🏥",
@@ -73,9 +73,44 @@ const allQuizQuestions: Record<
       correct: 0,
       funFact: "AI learns from millions of examples - the more it sees, the smarter it gets! 📈",
     },
+    {
+      id: "h4",
+      question: "What happens if AI finds something suspicious in a scan? 👀",
+      options: [
+        "⚠️ The doctor gets a detailed alert to review it carefully!",
+        "🔔 It automatically removes the patient's scan",
+        "📞 It calls the doctor without showing details",
+        "❌ It ignores it if it's not 100% sure",
+      ],
+      correct: 0,
+      funFact: "AI gives doctors a 'second opinion' - super useful! 🎯",
+    },
+    {
+      id: "h5",
+      question: "Which disease did AI help detect early MORE often? 💊",
+      options: [
+        "🫁 Lung cancer in early stages!",
+        "🦷 Cavities in teeth",
+        "💇 Hair loss conditions",
+        "👣 Athlete's foot",
+      ],
+      correct: 0,
+      funFact: "Early detection means better treatment options! 🌟",
+    },
+    {
+      id: "h6",
+      question: "If you were a doctor, would you use AI for diagnosis? 🤓",
+      options: [
+        "✅ YES! To help me catch things I might miss!",
+        "❌ NO! I don't trust computers",
+        "🤔 Only if the hospital forces me to",
+        "⏰ Maybe in the future, but not now",
+      ],
+      correct: 0,
+      funFact: "Most modern hospitals already use AI - it's THAT helpful! 🏥",
+    },
   ],
   2: [
-    // Social Media
     {
       id: "s1",
       question: "How fast can AI check posts for bullying or mean content? 💨",
@@ -98,528 +133,626 @@ const allQuizQuestions: Record<
         "📢 Post it publicly to shame the person",
       ],
       correct: 1,
-      funFact: "AI sometimes makes mistakes, so humans double-check to keep it fair! ⚖️",
+      funFact: "Humans and AI work together - neither is perfect alone! 🤝",
     },
     {
       id: "s3",
-      question: "Why is AI content moderation important for kids like you? 👧👦",
+      question: "Can AI understand the difference between jokes and mean comments? 😄",
       options: [
-        "🛡️ It helps keep online spaces safe and friendly for everyone!",
-        "👮 To get people in trouble",
-        "💰 To make social media companies rich",
-        "📊 Just to collect data",
+        "🤷 Not always - context is tricky!",
+        "✅ Yes, it's 100% accurate every time",
+        "❌ No, it thinks everything is bullying",
+        "🎭 Only if the comment has emojis",
       ],
       correct: 0,
-      funFact: "Safe online spaces mean you can have fun without worrying about bullies! 🎉",
+      funFact: "That's why humans review AI decisions - context matters! 🧠",
+    },
+    {
+      id: "s4",
+      question: "What's the COOLEST part of AI content moderation? 🌟",
+      options: [
+        "🛡️ It protects millions of people INSTANTLY!",
+        "💰 It saves money for social media companies",
+        "🎮 It makes platforms more fun",
+        "📱 It makes videos load faster",
+      ],
+      correct: 0,
+      funFact: "Billions of people are safer online because of AI! 🌍",
+    },
+    {
+      id: "s5",
+      question: "How does AI learn what's 'bad' content? 📚",
+      options: [
+        "🏫 By studying millions of examples marked as bad by humans!",
+        "🎲 It guesses randomly",
+        "📖 It reads the platform's rule book once",
+        "🤖 It just knows naturally",
+      ],
+      correct: 0,
+      funFact: "Training data is SUPER important for AI! Quality + Quantity = Success! 💪",
+    },
+    {
+      id: "s6",
+      question: "If you could improve content moderation AI, what would you add? 🚀",
+      options: [
+        "🌐 Better cultural understanding across different countries!",
+        "🎯 Make it block MORE posts",
+        "🔇 Make it delete all negative comments",
+        "⏰ Make it slower so humans can review more",
+      ],
+      correct: 0,
+      funFact: "Different countries have different rules - AI must respect culture! 🌏",
     },
   ],
   3: [
-    // Weather
     {
       id: "w1",
-      question: "How far in advance can AI predict hurricanes? 🌀",
+      question: "How can AI predict hurricanes DAYS before they happen? 🌪️",
       options: [
-        "⏰ Just a few hours before",
-        "📅 Days or even a week ahead!",
-        "🔮 Months before they form",
-        "❌ AI can't predict hurricanes",
+        "🛰️ By analyzing satellite images + ocean data + wind patterns!",
+        "🔮 It reads weather wizard's crystal ball",
+        "📡 It checks people's weather apps",
+        "🌊 It talks to dolphins",
       ],
-      correct: 1,
-      funFact: "Knowing about hurricanes early saves lives! Families can evacuate safely! 🏃‍♀️",
+      correct: 0,
+      funFact: "AI predictions can give families DAYS to prepare! Lives saved! 🏠",
     },
     {
       id: "w2",
-      question: "What does AI look at to predict the weather? 👀",
+      question: "What's cooler about AI weather - accuracy or SPEED? ⚡",
       options: [
-        "🐸 It asks frogs (they predict rain!)",
-        "🛰️ Satellite images, ocean temps, wind patterns, and tons more!",
-        "📺 Weather channel hosts",
-        "🌡️ Just temperature",
+        "⚡ SPEED! We get forecasts instantly!",
+        "🎯 Accuracy! We know EXACTLY what will happen!",
+        "👥 Neither - social media is better",
+        "💰 Cost - it's cheaper",
       ],
       correct: 1,
-      funFact: "AI analyzes more data in one second than you could read in your entire life! 📚",
+      funFact: "Modern AI combines BOTH - super accurate AND super fast! 🌟",
     },
     {
       id: "w3",
-      question: "How does weather prediction AI help YOUR life? 🤔",
+      question: "Which data helps AI predict weather BEST? 📊",
       options: [
-        "📱 You check the weather app before going to school!",
-        "🏖️ It only helps people at the beach",
-        "❄️ It only predicts snow",
-        "🎮 It has nothing to do with daily life",
+        "📍 Location data only",
+        "🌡️ Temperature readings only",
+        "🧬 ALL of it together - satellites, stations, ocean data!",
+        "📱 Phone GPS signals",
+      ],
+      correct: 2,
+      funFact: "Big Data + AI = Weather Superpowers! 🦸",
+    },
+    {
+      id: "w4",
+      question: "What's the most important job of weather AI RIGHT NOW? 🎯",
+      options: [
+        "⚠️ Warn people about dangerous storms so they stay safe!",
+        "🎮 Make weather forecasting into a game",
+        "💰 Sell weather data to TV companies",
+        "🎬 Create dramatic weather predictions",
       ],
       correct: 0,
-      funFact: "Weather apps use AI! So you're already using AI every day! 😎",
+      funFact: "Every storm warning saves lives! 🏥🚑",
+    },
+    {
+      id: "w5",
+      question: "How has AI changed climate science? 🌍",
+      options: [
+        "🔬 It processes MASSIVE amounts of data scientists analyze!",
+        "❌ It hasn't changed anything",
+        "🎯 It made weather boring",
+        "📺 It's only for TV weather reports",
+      ],
+      correct: 0,
+      funFact: "AI helps us understand climate change better! 🌡️📈",
+    },
+    {
+      id: "w6",
+      question: "Would you want to work in AI weather prediction? 🚀",
+      options: [
+        "✅ YES! Helping people + Technology = DREAM JOB!",
+        "❌ No, too complicated",
+        "🤔 Maybe, if I could also be an astronaut",
+        "📚 I prefer other types of AI",
+      ],
+      correct: 0,
+      funFact: "Climate tech is one of the FASTEST growing AI fields! 🌍✨",
     },
   ],
   4: [
-    // Accessibility
     {
       id: "a1",
-      question: "How does AI help someone who can't see? 👁️",
+      question: "How does AI help people who are blind see the world? 👁️",
       options: [
-        "📱 AI describes their surroundings through their phone!",
-        "🕶️ It gives them special glasses that fix their vision",
-        "❌ AI can't help with vision problems",
-        "📖 It reads books slowly to them",
+        "🎤 It describes everything around them through audio!",
+        "🩹 It gives them eyesight back (magic!)",
+        "🤖 It becomes their replacement eyes",
+        "📸 It takes pictures instead of them",
       ],
       correct: 0,
-      funFact: "Apps can tell you 'There's a red car 10 feet ahead' or 'Your friend is smiling!' 📸",
+      funFact: "AI audio descriptions let blind people navigate independently! 🦾",
     },
     {
       id: "a2",
-      question: "What's AWESOME about AI accessibility tools? 🌟",
+      question: "What's an AWESOME way AI helps people who are deaf? 🎤",
       options: [
-        "💰 They're always super expensive",
-        "♿ They help people with disabilities do things independently!",
-        "👥 Only adults can use them",
-        "🏢 They only work in special buildings",
+        "📝 It turns speech into text instantly - real-time captions!",
+        "🎵 It plays music louder",
+        "🔊 It gives them hearing somehow",
+        "📱 It silences everything",
       ],
-      correct: 1,
-      funFact: "AI accessibility tools help millions of people live more independent lives! 💪",
+      correct: 0,
+      funFact: "Live captions mean deaf people can participate in meetings & calls! 🎯",
     },
     {
       id: "a3",
-      question: "How does AI help people who have trouble typing? ⌨️",
+      question: "How does AI help people with mobility challenges? 🛼",
       options: [
-        "💬 It predicts what they want to write before they finish!",
-        "🤖 It types random words for them",
-        "❌ It doesn't help with typing",
-        "🎤 It only works with voice commands",
+        "🎮 Voice control + predictive text = full device control!",
+        "🚗 It drives cars for them",
+        "💪 It gives them super strength",
+        "🦽 It replaces wheelchairs",
       ],
       correct: 0,
-      funFact: "Predictive text uses AI! Your phone already knows what you might say next! 💭",
+      funFact: "Voice AI means people can control computers by talking! 🗣️",
+    },
+    {
+      id: "a4",
+      question: "Is accessibility tech cool or just necessary? 😊",
+      options: [
+        "🌟 BOTH! It's cool AND it helps millions of people!",
+        "😴 It's just boring necessity stuff",
+        "🎮 Only cool if it has video games",
+        "👎 Not cool at all",
+      ],
+      correct: 0,
+      funFact: "Inclusive tech benefits EVERYONE - you might use it someday! 🌍",
+    },
+    {
+      id: "a5",
+      question: "What percentage of people use accessibility features? 📊",
+      options: [
+        "📈 Billions! Captions, voice control, subtitles - many people use these!",
+        "😅 Like 5 people max",
+        "🌍 Just a few countries",
+        "🔢 Nobody really",
+      ],
+      correct: 0,
+      funFact: "Even non-disabled people use accessibility features every day! 🎯",
+    },
+    {
+      id: "a6",
+      question: "What's the future of AI in accessibility? 🚀",
+      options: [
+        "🌈 Making technology work for EVERYONE uniquely!",
+        "🤖 Replacing all human assistants",
+        "📱 Only for smartphones",
+        "💻 Making computers more expensive",
+      ],
+      correct: 0,
+      funFact: "The future is INCLUSIVE - AI for all abilities! ♿👁️🎤✨",
     },
   ],
   5: [
-    // Fraud
     {
       id: "f1",
-      question: "How does AI know if someone's credit card was stolen? 💳",
+      question: "How does AI catch fraudsters faster than humans? ⚡",
       options: [
-        "🔮 It has a crystal ball",
-        "🔍 It spots weird patterns, like buying 50 video games at 3am!",
-        "📞 It calls the person to ask",
-        "🎲 It guesses randomly",
+        "🔍 It analyzes millions of transactions per SECOND looking for patterns!",
+        "👮 It calls the police automatically",
+        "💳 It blocks all transactions",
+        "🎲 It guesses who's suspicious",
       ],
-      correct: 1,
-      funFact: "AI knows your normal shopping habits, so it notices when something's fishy! 🐟",
+      correct: 0,
+      funFact: "AI fraud detection happens in milliseconds! 🏃",
     },
     {
       id: "f2",
-      question: "How fast does AI check bank transactions for fraud? ⚡",
+      question: "What counts as 'suspicious' to fraud AI? 🤔",
       options: [
-        "📅 Once a week",
-        "⏰ A few times a day",
-        "⚡ Every single transaction in MILLISECONDS!",
-        "📧 Only when you report something",
+        "🚨 Weird patterns like buying 100 PlayStations at 3am!",
+        "🎮 Only actual fraud attempts",
+        "💰 Any large transaction",
+        "🏪 Shopping on weekends",
       ],
-      correct: 2,
-      funFact: "Milliseconds are SUPER tiny - way faster than you can blink! 👁️",
+      correct: 0,
+      funFact: "AI learns normal patterns for each person! 🧠",
     },
     {
       id: "f3",
-      question: "Why is AI fraud detection important for YOUR family? 👨‍👩‍👧‍👦",
+      question: "Can AI fraud detection be WRONG? 🤷",
       options: [
-        "🛡️ It protects your family's money from thieves!",
-        "💰 It makes banks richer",
-        "👮 To catch criminals for fun",
-        "❌ It's not important for regular people",
+        "✅ Yes! Sometimes legit purchases get flagged!",
+        "❌ No, AI is always perfect",
+        "⏰ Only on Mondays",
+        "🌙 Only at night",
       ],
       correct: 0,
-      funFact: "AI fraud detection saved people over $28 BILLION last year! That's a lot of money! 💵",
+      funFact: "That's why you verify purchases! Balance = Security + Speed! 🛡️",
+    },
+    {
+      id: "f4",
+      question: "How much money does fraud AI SAVE every year? 💰",
+      options: [
+        "💵 BILLIONS! It stops massive theft constantly!",
+        "🪙 Like $50",
+        "📦 Only a few thousand",
+        "❌ None - fraud still wins",
+      ],
+      correct: 0,
+      funFact: "Banks save more money than they spend on fraud AI! 📊",
+    },
+    {
+      id: "f5",
+      question: "What makes a good fraud detection AI? 🎯",
+      options: [
+        "⚙️ Speed + Accuracy + Learning from new fraud tricks!",
+        "🔒 Just blocking everything",
+        "🚫 Blocking nothing",
+        "💭 Thinking really hard",
+      ],
+      correct: 0,
+      funFact: "Hackers constantly evolve - AI must evolve too! 🔄",
+    },
+    {
+      id: "f6",
+      question: "Would you want to work stopping cybercriminals? 👮",
+      options: [
+        "🎯 YES! Using AI to catch bad guys = AWESOME!",
+        "❌ No way, too dangerous",
+        "🤔 Only if I get a cape",
+        "🎮 I'd rather make games",
+      ],
+      correct: 0,
+      funFact: "Cybersecurity is one of the HOTTEST tech careers! 💼🚀",
     },
   ],
   6: [
-    // Education
     {
       id: "e1",
-      question: "What makes AI tutors different from regular teaching? 🤔",
+      question: "How does personalized AI tutoring help students? 🎓",
       options: [
-        "👨‍🏫 They're stricter than human teachers",
-        "🎯 They adapt to YOUR personal learning style and speed!",
-        "💰 They cost more money",
-        "📚 They only teach one subject",
+        "🧠 It spots what you're struggling with and gives perfect practice!",
+        "👨‍🏫 It replaces all teachers",
+        "😴 It makes learning boring",
+        "📱 It only works on phones",
       ],
-      correct: 1,
-      funFact: "AI tutors can teach the EXACT way YOU learn best - pretty cool! 🧠",
+      correct: 0,
+      funFact: "AI tutors adapt to YOUR learning style! 🎯",
     },
     {
       id: "e2",
-      question: "How does an AI tutor know what you're struggling with? 🔍",
+      question: "What's cooler - AI tutors or human teachers? 🤔",
       options: [
-        "📊 It tracks which problems you get wrong and figures out the pattern!",
-        "🔮 It guesses based on your age",
-        "📝 Your teacher tells it",
-        "🎲 It assigns random practice",
+        "🤝 BOTH! Teachers + AI = Ultimate Learning Team!",
+        "🤖 Only AI",
+        "👨‍🏫 Only humans",
+        "📚 Neither, I prefer books",
       ],
       correct: 0,
-      funFact: "AI is like a super-detective that figures out exactly where you need help! 🕵️",
+      funFact: "The future of education is HYBRID! 🌟",
     },
     {
       id: "e3",
-      question: "What's the BEST thing about AI learning tools? 🌟",
+      question: "How does AI know you're struggling with a topic? 📊",
       options: [
-        "🤖 They replace teachers completely",
-        "🎯 Everyone can learn at their own perfect pace!",
-        "📱 They let you use your phone in class",
-        "❌ There are no good things about them",
+        "📈 It tracks your answers, time spent, and mistakes!",
+        "🧠 It reads your mind",
+        "📱 It checks your notifications",
+        "🎮 It plays games to test you",
       ],
-      correct: 1,
-      funFact: "No more feeling rushed or bored in class - AI adapts to YOU! 🚀",
+      correct: 0,
+      funFact: "Data collection helps education - ethically! 🔒",
+    },
+    {
+      id: "e4",
+      question: "Can AI celebrate YOUR personal wins? 🎉",
+      options: [
+        "🎯 YES! It notices your progress and celebrates it!",
+        "😐 No, it's emotionless",
+        "🎮 Only in video games",
+        "📊 Only if you're the top student",
+      ],
+      correct: 0,
+      funFact: "Motivation matters! AI celebration = confidence boost! 💪",
+    },
+    {
+      id: "e5",
+      question: "What subject could AI tutoring help MOST? 📚",
+      options: [
+        "🧮 Math! (Complex problems, instant feedback - perfect for AI!)",
+        "📝 Only writing",
+        "🎨 Only art",
+        "⚽ Only sports",
+      ],
+      correct: 0,
+      funFact: "But AI can tutor literally ANY subject! 🌈",
+    },
+    {
+      id: "e6",
+      question: "Are YOU ready to be an Education Innovator? 🚀",
+      options: ["✅ YES! Learning + AI = Future Success!", "❌ No way", "🤔 Maybe later", "😴 School is boring anyway"],
+      correct: 0,
+      funFact: "YOU could build AI tutors that change education forever! 🌍",
     },
   ],
 }
 
-export default function MissionCard({ mission, onComplete, onBack }: Props) {
-  const [step, setStep] = useState(1)
-  const [answers, setAnswers] = useState<Record<string, number>>({})
-  const [reflection, setReflection] = useState("")
-  const [showResults, setShowResults] = useState(false)
-  const [selectedQuestions, setSelectedQuestions] = useState<(typeof allQuizQuestions)[1]>([])
+export default function MissionCard({ mission, onComplete, onBack, soundEnabled, playAudio }: Props) {
+  const [currentStage, setCurrentStage] = useState<"scenario" | "quiz" | "complete">("scenario")
+  const [quizIndex, setQuizIndex] = useState(0)
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
+  const [answered, setAnswered] = useState(false)
+  const [correctAnswers, setCorrectAnswers] = useState(0)
+  const [showFunFact, setShowFunFact] = useState(false)
+  const [quizQuestions, setQuizQuestions] = useState<(typeof allQuizQuestions)[1]>([])
 
   useEffect(() => {
-    const missionQuestions = allQuizQuestions[mission.id] || []
-    const shuffled = [...missionQuestions].sort(() => Math.random() - 0.5)
-    setSelectedQuestions(shuffled.slice(0, 2))
+    const allQuestions = allQuizQuestions[mission.id]
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5)
+    setQuizQuestions(shuffled.slice(0, 6))
   }, [mission.id])
 
-  const handleQuizSubmit = () => {
-    setShowResults(true)
-  }
+  const currentQuestion = quizQuestions[quizIndex]
+  const questionsCount = quizQuestions.length
 
-  const handleMissionComplete = () => {
-    if (reflection.trim().length > 20) {
-      onComplete(mission.id)
+  const handleAnswerClick = (index: number) => {
+    setSelectedAnswer(index)
+    setAnswered(true)
+    setShowFunFact(true)
+
+    if (index === currentQuestion.correct) {
+      setCorrectAnswers(correctAnswers + 1)
+      playAudio("correct")
+    } else {
+      playAudio("click")
     }
   }
 
-  const correctAnswers = Object.entries(answers).filter(
-    ([qId, ansIdx]) => selectedQuestions.find((q) => q.id === qId)?.correct === ansIdx,
-  ).length
+  const handleNextQuestion = () => {
+    if (quizIndex < questionsCount - 1) {
+      setQuizIndex(quizIndex + 1)
+      setSelectedAnswer(null)
+      setAnswered(false)
+      setShowFunFact(false)
+      playAudio("click")
+    } else {
+      setCurrentStage("complete")
+      playAudio("success")
+    }
+  }
 
-  return (
-    <div className="max-w-4xl mx-auto animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
-      <Button variant="ghost" onClick={onBack} className="mb-4 hover:scale-105 transition-transform hover:bg-cyan-100">
-        <ChevronLeft className="w-4 h-4 mr-2" />← Back to Missions
-      </Button>
+  if (currentStage === "scenario") {
+    return (
+      <Card className="max-w-4xl mx-auto border-2 shadow-xl animate-in fade-in-0 zoom-in-95 duration-500">
+        <CardHeader className="bg-gradient-to-r from-cyan-400/10 to-blue-400/10 border-b-2">
+          <div className="flex items-start justify-between mb-4">
+            <Button onClick={onBack} variant="ghost" size="sm" className="hover:bg-cyan-100/50">
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm">{mission.category}</Badge>
+          </div>
+          <CardTitle className="text-3xl text-balance">{mission.title}</CardTitle>
+          <CardDescription className="text-lg mt-2">{mission.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="bg-gradient-to-r from-teal-50 to-blue-50 p-6 rounded-xl border-2 border-teal-200">
+            <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-yellow-500" />
+              The Real-World Scenario 🌍
+            </h3>
+            <p className="text-base leading-relaxed whitespace-pre-wrap">{mission.scenario}</p>
+          </div>
 
-      <Card className="border-2 shadow-2xl bg-white">
-        <CardHeader>
-          <div className="flex items-center justify-between mb-2">
-            <Badge variant="secondary" className="text-sm bg-cyan-100 text-cyan-700 border border-cyan-300">
-              {mission.category}
-            </Badge>
-            <div className="flex gap-2">
-              {[1, 2, 3].map((s) => (
-                <div key={s} className="flex flex-col items-center gap-1">
-                  <div
-                    className={`transition-all rounded-full ${
-                      s === step
-                        ? "bg-cyan-500 w-10 h-3 shadow-lg shadow-cyan-500/50" // Cyan active step
-                        : s < step
-                          ? "bg-cyan-400 w-3 h-3" // Cyan completed step
-                          : "bg-gray-300 w-3 h-3"
-                    }`}
-                  />
-                  <span className="text-xs text-muted-foreground">{s === 1 ? "📖" : s === 2 ? "🧠" : "✨"}</span>
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+            <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+              <Brain className="w-5 h-5 text-purple-600" />
+              The AI Technology 🤖
+            </h3>
+            <p className="text-base leading-relaxed">{mission.aiApplication}</p>
+          </div>
+
+          <Button
+            onClick={() => {
+              setCurrentStage("quiz")
+              playAudio("click")
+            }}
+            size="lg"
+            className="w-full text-lg h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:scale-105 transition-all shadow-lg font-bold"
+          >
+            <Rocket className="w-5 h-5 mr-2" />
+            Ready for 6 EPIC Questions? 🎮
+            <Sparkles className="w-5 h-5 ml-2" />
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (currentStage === "quiz" && currentQuestion) {
+    return (
+      <Card className="max-w-2xl mx-auto border-2 shadow-xl animate-in fade-in-0 zoom-in-95 duration-500">
+        <CardHeader className="bg-gradient-to-r from-blue-400/10 to-purple-400/10 border-b-2">
+          <div className="flex items-center justify-between mb-4">
+            <Button onClick={onBack} variant="ghost" size="sm" className="hover:bg-cyan-100/50">
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-bold bg-cyan-100 px-3 py-1 rounded-full border-2 border-cyan-300">
+                Question {quizIndex + 1} / {questionsCount}
+              </div>
+              <div className="text-sm font-bold bg-green-100 px-3 py-1 rounded-full border-2 border-green-300">
+                ✅ {correctAnswers} Correct
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+              style={{ width: `${((quizIndex + 1) / questionsCount) * 100}%` }}
+            />
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6 pt-6">
+          <h3 className="text-2xl font-bold text-balance text-gray-800">{currentQuestion.question}</h3>
+
+          <RadioGroup value={selectedAnswer?.toString() || ""}>
+            <div className="space-y-3">
+              {currentQuestion.options.map((option, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:scale-105 ${
+                    answered
+                      ? idx === currentQuestion.correct
+                        ? "bg-green-100 border-green-400 shadow-lg"
+                        : idx === selectedAnswer
+                          ? "bg-red-100 border-red-400 shadow-lg"
+                          : "bg-gray-50 border-gray-300 opacity-50"
+                      : selectedAnswer === idx
+                        ? "bg-blue-100 border-blue-400 shadow-lg"
+                        : "bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300"
+                  }`}
+                  onClick={() => !answered && handleAnswerClick(idx)}
+                >
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem
+                      value={idx.toString()}
+                      id={`option-${idx}`}
+                      disabled={answered}
+                      className="w-5 h-5 cursor-pointer"
+                    />
+                    <Label htmlFor={`option-${idx}`} className="text-base cursor-pointer font-medium flex-1">
+                      {option}
+                    </Label>
+                    {answered && idx === currentQuestion.correct && (
+                      <CheckCircle2 className="w-5 h-5 text-green-600 animate-bounce" />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-          <CardTitle className="text-3xl text-balance text-gray-800">{mission.title}</CardTitle>
-          <CardDescription className="text-base leading-relaxed text-gray-600">{mission.description}</CardDescription>
-        </CardHeader>
+          </RadioGroup>
 
-        <CardContent className="space-y-6">
-          {step === 1 && (
-            <div className="space-y-6 animate-in fade-in-0 slide-in-from-right-4 duration-500">
-              <div className="flex items-center gap-2 text-cyan-700 font-bold text-lg bg-cyan-100 p-3 rounded-xl border-2 border-cyan-300">
-                <Sparkles className="w-6 h-6 animate-pulse" />
-                <span>Step 1: The Amazing Scenario! 🎯</span>
-              </div>
-
-              <div className="bg-gradient-to-br from-teal-400/20 to-teal-500/10 p-6 rounded-2xl border-2 border-teal-300 shadow-lg">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-3xl">📖</span>
-                  <h3 className="font-bold text-xl text-gray-800">The Real-World Story</h3>
-                </div>
-                <p className="text-gray-700 leading-relaxed text-lg mb-4">{mission.scenario}</p>
-
-                <div className="pt-4 border-t-2 border-teal-300">
-                  <div className="flex items-start gap-3 bg-white/70 p-4 rounded-xl backdrop-blur-sm">
-                    <Brain className="w-6 h-6 text-teal-600 shrink-0 mt-1 animate-pulse" />
-                    <div>
-                      <h4 className="font-bold mb-2 flex items-center gap-2 text-gray-800">🤖 AI Technology Used</h4>
-                      <p className="text-gray-700 font-semibold">{mission.aiApplication}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-blue-400/20 to-blue-500/10 p-6 rounded-2xl border-2 border-blue-300 shadow-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-3xl">⚙️</span>
-                  <h3 className="font-bold text-xl text-gray-800">How Does It Work? 🔧</h3>
-                </div>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3 bg-white/70 p-3 rounded-xl hover:scale-105 transition-transform backdrop-blur-sm">
-                    <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-1" />
-                    <span className="leading-relaxed text-gray-700">
-                      <strong>💨 Super Speed:</strong> AI analyzes MASSIVE amounts of data that would take humans years
-                      to process!
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3 bg-white/70 p-3 rounded-xl hover:scale-105 transition-transform backdrop-blur-sm">
-                    <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-1" />
-                    <span className="leading-relaxed text-gray-700">
-                      <strong>📈 Gets Smarter:</strong> The more it learns, the better it gets - like leveling up in a
-                      video game! 🎮
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3 bg-white/70 p-3 rounded-xl hover:scale-105 transition-transform backdrop-blur-sm">
-                    <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-1" />
-                    <span className="leading-relaxed text-gray-700">
-                      <strong>👨‍💼 Human Teamwork:</strong> AI and humans work TOGETHER - AI suggests, humans decide!
-                      Best of both worlds! 💪
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              <Button
-                onClick={() => setStep(2)}
-                size="lg"
-                className="w-full text-lg h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:scale-105 transition-all shadow-lg"
-              >
-                <Zap className="w-5 h-5 mr-2 animate-pulse" />
-                Ready for the Quiz! 🧠
-                <ChevronLeft className="w-5 h-5 ml-2 rotate-180" />
-              </Button>
+          {showFunFact && (
+            <div className="animate-in slide-in-from-bottom-4 duration-300 bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-xl border-2 border-yellow-400 shadow-lg">
+              <p className="font-semibold text-base flex items-start gap-2">
+                <span className="text-xl">💡</span>
+                <span>{currentQuestion.funFact}</span>
+              </p>
             </div>
           )}
 
-          {step === 2 && (
-            <div className="space-y-6 animate-in fade-in-0 slide-in-from-right-4 duration-500">
-              <div className="flex items-center gap-2 text-purple-700 font-bold text-lg bg-purple-100 p-3 rounded-xl border-2 border-purple-300">
-                <Brain className="w-6 h-6 animate-pulse" />
-                <span>Step 2: Test Your Brain Power! 🧠💪</span>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                <p className="text-center text-sm text-gray-700">
-                  <strong>📝 Quick Quiz Time!</strong> Don't worry - these questions help you learn! No pressure! 😊
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                {selectedQuestions.map((q, idx) => (
-                  <Card key={q.id} className="border-2 hover:border-cyan-400 transition-all hover:shadow-xl bg-white">
-                    <CardHeader className="bg-gradient-to-r from-cyan-50 to-transparent">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className="text-lg px-3 py-1 bg-cyan-500 text-white">
-                          Question {idx + 1} {idx === 0 ? "🥇" : "🥈"}
-                        </Badge>
-                      </div>
-                      <CardTitle className="text-lg text-balance leading-relaxed text-gray-800">{q.question}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <RadioGroup
-                        value={answers[q.id]?.toString()}
-                        onValueChange={(value) => setAnswers({ ...answers, [q.id]: Number.parseInt(value) })}
-                      >
-                        {q.options.map((option, optIdx) => (
-                          <div
-                            key={optIdx}
-                            className={`flex items-start gap-3 mb-3 p-3 rounded-xl border-2 transition-all hover:border-cyan-400 hover:bg-cyan-50 ${
-                              answers[q.id] === optIdx ? "border-cyan-500 bg-cyan-50 shadow-md" : "border-gray-200"
-                            }`}
-                          >
-                            <RadioGroupItem value={optIdx.toString()} id={`q${q.id}-${optIdx}`} className="mt-1" />
-                            <Label
-                              htmlFor={`q${q.id}-${optIdx}`}
-                              className="cursor-pointer leading-relaxed text-base flex-1 text-gray-700"
-                            >
-                              {option}
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-
-                      {showResults && (
-                        <div
-                          className={`mt-4 p-4 rounded-xl border-2 transition-all ${
-                            answers[q.id] === q.correct
-                              ? "bg-gradient-to-r from-teal-100 to-teal-50 border-teal-400 animate-in zoom-in-95 duration-300"
-                              : "bg-gradient-to-r from-orange-100 to-orange-50 border-orange-400 animate-in zoom-in-95 duration-300"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            {answers[q.id] === q.correct ? (
-                              <>
-                                <div className="text-4xl animate-bounce">🎉</div>
-                                <div className="flex-1">
-                                  <p className="font-bold text-teal-700 text-lg">AMAZING! You nailed it! 🌟</p>
-                                  <p className="text-sm text-gray-700 mt-2">
-                                    <strong>💡 Fun Fact:</strong> {q.funFact}
-                                  </p>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-4xl">🤔</div>
-                                <div className="flex-1">
-                                  <p className="font-bold text-orange-700 text-lg">Not quite - but that's okay!</p>
-                                  <p className="text-sm mt-2 text-gray-700">
-                                    <strong>✅ The right answer:</strong> {q.options[q.correct]}
-                                  </p>
-                                  <p className="text-sm text-gray-700 mt-2">
-                                    <strong>💡 Fun Fact:</strong> {q.funFact}
-                                  </p>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              <div className="flex gap-4">
-                {!showResults ? (
-                  <Button
-                    onClick={handleQuizSubmit}
-                    size="lg"
-                    disabled={Object.keys(answers).length < selectedQuestions.length}
-                    className="w-full text-lg h-14 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 text-white hover:scale-105 transition-all shadow-lg"
-                  >
-                    <Trophy className="w-5 h-5 mr-2" />
-                    Check My Answers! 🎯
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => setStep(3)}
-                    size="lg"
-                    className="w-full text-lg h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:scale-105 transition-all shadow-lg"
-                  >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Continue to Reflection! ✨
-                    <ChevronLeft className="w-5 h-5 ml-2 rotate-180" />
-                  </Button>
-                )}
-              </div>
-
-              {showResults && (
-                <div className="bg-gradient-to-r from-cyan-100 to-blue-100 p-6 rounded-2xl border-2 border-cyan-300 text-center animate-in zoom-in-95 duration-500">
-                  <div className="text-6xl mb-3 animate-bounce">
-                    {correctAnswers === selectedQuestions.length ? "🏆" : correctAnswers > 0 ? "🌟" : "💪"}
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2 text-gray-800">
-                    {correctAnswers === selectedQuestions.length
-                      ? "PERFECT SCORE! You're a genius! 🎉"
-                      : correctAnswers > 0
-                        ? "Great effort! Keep learning! 🚀"
-                        : "Every expert was once a beginner! 💪"}
-                  </h3>
-                  <p className="text-lg text-gray-700">
-                    You got <strong className="text-cyan-700">{correctAnswers}</strong> out of{" "}
-                    <strong>{selectedQuestions.length}</strong> correct!
-                  </p>
-                </div>
+          {answered && (
+            <Button
+              onClick={handleNextQuestion}
+              size="lg"
+              className="w-full text-lg h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:scale-105 transition-all shadow-lg font-bold animate-in slide-in-from-bottom-4 duration-300"
+            >
+              {quizIndex === questionsCount - 1 ? (
+                <>
+                  <Trophy className="w-5 h-5 mr-2" />
+                  See My Results! 🏆
+                  <Star className="w-5 h-5 ml-2" />
+                </>
+              ) : (
+                <>
+                  Next Question
+                  <Zap className="w-5 h-5 ml-2" />
+                </>
               )}
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-6 animate-in fade-in-0 slide-in-from-right-4 duration-500">
-              <div className="flex items-center gap-2 text-pink-700 font-bold text-lg bg-pink-100 p-3 rounded-xl border-2 border-pink-300">
-                <Star className="w-6 h-6 animate-pulse" />
-                <span>Step 3: Connect AI to YOUR Life! ✨</span>
-              </div>
-
-              <div className="bg-gradient-to-br from-pink-400/20 to-pink-500/10 p-6 rounded-2xl border-2 border-pink-300 shadow-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-3xl">💭</span>
-                  <h3 className="font-bold text-xl text-gray-800">Time to Think Deep! 🤔</h3>
-                </div>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  Now it's YOUR turn! Share your thoughts about how this AI technology connects to your life, your
-                  future, or the world around you! 🌍
-                </p>
-
-                <div className="space-y-4">
-                  <div className="bg-white/70 p-4 rounded-xl backdrop-blur-sm">
-                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-800">
-                      💡 Reflection Prompts (Pick one or answer all!):
-                    </h4>
-                    <ul className="space-y-2 text-sm text-gray-700">
-                      <li className="flex items-start gap-2">
-                        <span className="shrink-0">🎯</span>
-                        <span>How could this AI technology help YOU or your family right now?</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="shrink-0">🚀</span>
-                        <span>
-                          If you could improve this AI, what would you add? What problems would you solve with it?
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="shrink-0">⚖️</span>
-                        <span>What are the pros AND cons of using this AI? How can we make sure it's used fairly?</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="shrink-0">🌟</span>
-                        <span>Would you want to work on this kind of AI when you grow up? Why or why not?</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="reflection" className="text-base font-semibold mb-2 block text-gray-800">
-                      ✍️ Your Reflection (Write at least 2-3 sentences):
-                    </Label>
-                    <Textarea
-                      id="reflection"
-                      value={reflection}
-                      onChange={(e) => setReflection(e.target.value)}
-                      placeholder="Type your thoughts here... Be honest and creative! There are no wrong answers! 💭✨"
-                      className="min-h-[200px] text-base border-2 border-gray-300 focus:border-cyan-400 rounded-xl"
-                    />
-                    <p className="text-sm text-gray-600 mt-2">
-                      {reflection.trim().length < 20
-                        ? `Keep going! Write a bit more... (${reflection.trim().length} characters so far)`
-                        : `Awesome! You wrote ${reflection.trim().length} characters! 🎉`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                  size="lg"
-                  className="flex-1 text-lg h-14 border-2 hover:bg-gray-100"
-                >
-                  <ChevronLeft className="w-5 h-5 mr-2" />
-                  Back to Quiz
-                </Button>
-                <Button
-                  onClick={handleMissionComplete}
-                  disabled={reflection.trim().length < 20}
-                  size="lg"
-                  className="flex-1 text-lg h-14 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 hover:from-cyan-600 hover:via-blue-600 hover:to-purple-600 disabled:opacity-50 text-white hover:scale-105 transition-all shadow-lg"
-                >
-                  <Rocket className="w-5 h-5 mr-2 animate-pulse" />
-                  Complete Mission! 🏆
-                </Button>
-              </div>
-            </div>
+            </Button>
           )}
         </CardContent>
       </Card>
-    </div>
-  )
+    )
+  }
+
+  if (currentStage === "complete") {
+    const percentage = Math.round((correctAnswers / questionsCount) * 100)
+    const isPerfect = correctAnswers === questionsCount
+    const isGreat = correctAnswers >= questionsCount - 1
+
+    return (
+      <Card className="max-w-2xl mx-auto border-3 shadow-2xl animate-in zoom-in-95 duration-500">
+        <CardHeader className="text-center space-y-4 bg-gradient-to-r from-green-100 to-emerald-100 border-b-3">
+          <div className="flex justify-center">
+            <div className="relative animate-bounce">
+              {isPerfect ? (
+                <div className="text-7xl">🏆</div>
+              ) : isGreat ? (
+                <div className="text-7xl">⭐</div>
+              ) : (
+                <div className="text-7xl">🎉</div>
+              )}
+            </div>
+          </div>
+          <CardTitle className="text-4xl font-black text-balance">
+            {isPerfect ? "PERFECT SCORE! 🌟" : isGreat ? "EXCELLENT!" : "MISSION COMPLETE!"}
+          </CardTitle>
+          <div className="text-3xl font-bold text-green-600">
+            {correctAnswers} / {questionsCount} Correct! ({percentage}%)
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6 pt-6">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
+            <h3 className="font-bold text-lg mb-3">Your Achievement: 🎯</h3>
+            <p className="text-base leading-relaxed">
+              {isPerfect
+                ? "WOW! PERFECT SCORE! You're an absolute AI GENIUS! 🧠✨ You've completely mastered this mission!"
+                : isGreat
+                  ? "FANTASTIC! You really understand this AI application! You're becoming an AI expert! 💪"
+                  : "AWESOME! You learned so much about " + mission.title + "! Keep playing to master every mission!"}
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+            <h3 className="font-bold text-lg mb-3">🌟 Badge Earned:</h3>
+            <div className="flex items-center gap-4">
+              <div className="text-6xl">{mission.badge?.icon}</div>
+              <div>
+                <p className="font-bold text-lg">{mission.badge?.name}</p>
+                <p className="text-sm text-gray-600">{mission.badge?.description}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                onComplete(mission.id)
+              }}
+              size="lg"
+              className="w-full text-lg h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:scale-105 transition-all shadow-lg font-bold"
+            >
+              <Rocket className="w-5 h-5 mr-2" />
+              Back to Missions! 🚀
+              <Sparkles className="w-5 h-5 ml-2" />
+            </Button>
+            <Button
+              onClick={() => {
+                setCurrentStage("scenario")
+                setQuizIndex(0)
+                setSelectedAnswer(null)
+                setAnswered(false)
+                setShowFunFact(false)
+                setCorrectAnswers(0)
+              }}
+              size="lg"
+              variant="outline"
+              className="w-full text-lg h-14 border-2 hover:scale-105 transition-all font-bold"
+            >
+              <Star className="w-5 h-5 mr-2" />
+              Play Again! 🔄
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return null
 }
