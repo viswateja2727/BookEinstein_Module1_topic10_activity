@@ -1,4 +1,6 @@
-# AI course game
+# AI Explorer
+
+**Project URL**: [AI Explorer](https://v0-ai-course-game.vercel.app/)(click here to play)
 
 *Automatically synced with your [v0.app](https://v0.app) deployments*
 
