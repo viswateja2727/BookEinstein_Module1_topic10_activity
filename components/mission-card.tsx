@@ -16,6 +16,36 @@ type Mission = {
   scenario: string
   aiApplication: string
   completed: boolean
+  badge?: {
+    icon: string
+    name: string
+    description: string
+  }
+}
+
+type QuizQuestion = {
+  id: string
+  question: string
+  options: string[]
+  correct: number
+  funFact: string
+}
+
+const shuffleOptions = (question: QuizQuestion): QuizQuestion => {
+  const optionsWithIndices = question.options.map((option, index) => ({
+    option,
+    originalIndex: index,
+  }))
+
+  const shuffled = [...optionsWithIndices].sort(() => Math.random() - 0.5)
+
+  const newCorrectIndex = shuffled.findIndex((item) => item.originalIndex === question.correct)
+
+  return {
+    ...question,
+    options: shuffled.map((item) => item.option),
+    correct: newCorrectIndex,
+  }
 }
 
 type Props = {
@@ -484,12 +514,13 @@ export default function MissionCard({ mission, onComplete, onBack, soundEnabled,
   const [answered, setAnswered] = useState(false)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [showFunFact, setShowFunFact] = useState(false)
-  const [quizQuestions, setQuizQuestions] = useState<(typeof allQuizQuestions)[1]>([])
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])
 
   useEffect(() => {
     const allQuestions = allQuizQuestions[mission.id]
     const shuffled = [...allQuestions].sort(() => Math.random() - 0.5)
-    setQuizQuestions(shuffled.slice(0, 6))
+    const shuffledWithRandomOptions = shuffled.slice(0, 6).map((question) => shuffleOptions(question))
+    setQuizQuestions(shuffledWithRandomOptions)
   }, [mission.id])
 
   const currentQuestion = quizQuestions[quizIndex]
